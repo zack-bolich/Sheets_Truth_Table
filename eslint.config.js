@@ -26,5 +26,11 @@ export default tseslint.config(
       globals: { console: 'readonly', process: 'readonly' },
     },
   },
+  {
+    // Custom functions are global script declarations that Sheets calls by name.
+    files: ['apps/sheets/src/functions.ts'],
+    languageOptions: { sourceType: 'script' },
+    rules: { '@typescript-eslint/no-unused-vars': ['error', { vars: 'local' }] },
+  },
   prettier,
 );
