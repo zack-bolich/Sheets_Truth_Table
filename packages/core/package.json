@@ -1,0 +1,10 @@
+{
+  "name": "@sheets-logic/core",
+  "version": "0.1.0",
+  "description": "Pure TypeScript Boolean expression parser, evaluator and truth-table generator.",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false
+}

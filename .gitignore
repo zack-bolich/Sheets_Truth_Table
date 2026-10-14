@@ -1,0 +1,13 @@
+node_modules/
+build/
+coverage/
+dist/
+*.tsbuildinfo
+.tsbuild/
+
+# clasp: the script ID is per-user; commit .clasp.example.json instead
+.clasp.json
+# OAuth tokens — never commit
+.clasprc.json
+
+.DS_Store

@@ -1,0 +1,8 @@
+{
+  "name": "@sheets-logic/sheets",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Google Sheets custom-function adapter for @sheets-logic/core.",
+  "license": "MIT",
+  "type": "module"
+}
