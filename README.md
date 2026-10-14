@@ -132,7 +132,30 @@ npm run format       # Prettier
 npm run build        # → build/
 ```
 
-<!-- TODO: clasp setup + `npm run push` once wired up -->
+### Pushing to Google Sheets
+
+One-time setup:
+
+1. Enable the Apps Script API at <https://script.google.com/home/usersettings>.
+2. Log in: `npx clasp login` (opens a browser for OAuth).
+3. Create a spreadsheet with a bound script project, from the repo root:
+
+   ```sh
+   npx clasp create --type sheets --title "sheets-logic" --rootDir build
+   ```
+
+   This writes `.clasp.json` (see [`.clasp.example.json`](.clasp.example.json)) and prints the new spreadsheet's URL. To use an existing sheet instead, copy `.clasp.example.json` to `.clasp.json` and fill in the script ID from _Extensions → Apps Script → Project Settings_.
+
+`.clasp.json` is gitignored because it points at your own script. Never commit `~/.clasprc.json`, which holds your OAuth tokens.
+
+Then:
+
+```sh
+npm run push         # build + clasp push
+npm run push:watch   # build, push, then re-push whenever build/ changes (re-run `npm run build` to trigger)
+```
+
+Change the code here, not in the online Apps Script editor: `build/` is regenerated on every build, so editor changes get overwritten on the next push. `clasp push` asks before overwriting the remote manifest; answer yes when `appsscript.json` has changed on purpose.
 
 ## License
 

@@ -15,6 +15,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "push": "npm run build && clasp push",
+    "push:watch": "npm run build && clasp push --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
