@@ -2,7 +2,8 @@ import { LogicError } from './errors';
 import { formatSop } from './format';
 import { type Implicant, compareImplicants, covers, literalCount } from './implicant';
 import { compile, truthTable } from './truthTable';
-import { type VarOrderInput, parseVarOrder } from './variables';
+import { resolveNames, validateTermLists } from './terms';
+import type { VarOrderInput } from './variables';
 
 /** Largest number of variables minimization accepts. */
 export const MAX_MINIMIZE_VARIABLES = 10;
@@ -15,8 +16,6 @@ export const MAX_MINIMIZE_VARIABLES = 10;
  * random functions of 8+ variables come near the budget.
  */
 const SEARCH_NODE_LIMIT = 20_000;
-
-const DEFAULT_NAMES = 'ABCDEFGHIJ';
 
 /**
  * Quine–McCluskey: all prime implicants of the function whose 1s and
@@ -63,28 +62,11 @@ export function minimizeMinterms(
       `Number of variables must be a whole number from 0 to ${MAX_MINIMIZE_VARIABLES}`,
     );
   }
-  const on = validateIndices(n, minterms, 'Minterm');
-  const dc = validateIndices(n, dontCares, "Don't-care");
-  for (const m of on) {
-    if (dc.includes(m)) throw new LogicError(`Minterm ${m} is also listed as a don't-care`);
-  }
+  const { on, dc } = validateTermLists(n, minterms, dontCares);
   if (on.length === 0) return [];
 
   const primes = primeImplicants(n, [...on, ...dc]);
   return selectCover(n, on, primes).sort((a, b) => compareImplicants(a, b, n));
-}
-
-function validateIndices(n: number, indices: readonly number[], what: string): number[] {
-  const size = 2 ** n;
-  for (const m of indices) {
-    if (!Number.isInteger(m)) throw new LogicError(`${what} ${m} is not a whole number`);
-    if (m < 0 || m >= size) {
-      throw new LogicError(
-        `${what} ${m} is out of range for ${n} variable${n === 1 ? '' : 's'} (0–${size - 1})`,
-      );
-    }
-  }
-  return [...new Set(indices)].sort((a, b) => a - b);
 }
 
 /**
@@ -317,12 +299,7 @@ export function minimizeM(
   names?: VarOrderInput,
 ): string {
   const cover = minimizeMinterms(n, minterms, dontCares);
-  const given = names === undefined ? [] : parseVarOrder(names);
-  if (given.length > 0 && given.length !== n) {
-    throw new LogicError(`Expected ${n} variable names but got ${given.length}`);
-  }
-  const variables = given.length > 0 ? given : DEFAULT_NAMES.slice(0, n).split('');
-  return formatSop(cover, variables);
+  return formatSop(cover, resolveNames(n, names));
 }
 
 function checkMinimizeSize(n: number): void {
