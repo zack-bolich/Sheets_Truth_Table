@@ -22,3 +22,25 @@ jobs:
       - run: npm run format:check
       - run: npm run coverage
       - run: npm run build
+
+  schemdraw:
+    # Confirms Schemdraw's own parser reads every =SCHEMDRAW() string as the
+    # same function, and that draw.py runs.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/schemdraw/requirements.txt
+      - run: npm ci
+      - run: npm run build
+      - run: pip install -r tools/schemdraw/requirements.txt
+      - run: node tools/schemdraw/make_cases.mjs > cases.json
+      - run: python tools/schemdraw/check_export.py cases.json
+      - run: python tools/schemdraw/draw.py "GW = not E and not S and W" -o diagrams

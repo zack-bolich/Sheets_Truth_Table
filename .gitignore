@@ -11,3 +11,7 @@ dist/
 .clasprc.json
 
 .DS_Store
+
+# Python (tools/schemdraw)
+__pycache__/
+.venv/
