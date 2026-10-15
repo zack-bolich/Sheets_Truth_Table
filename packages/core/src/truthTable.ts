@@ -47,17 +47,27 @@ export function compile(source: string, varOrder?: VarOrderInput): CompiledExpre
 export function truthTable(source: string, varOrder?: VarOrderInput): TruthTable {
   const { ast, variables } = compile(source, varOrder);
   const n = variables.length;
-  if (n > MAX_VARIABLES) {
-    throw new LogicError(`Too many variables (${n}); the limit is ${MAX_VARIABLES}`);
-  }
+  checkTableSize(n);
   const rows: TruthTableRow[] = [];
   for (let index = 0; index < 2 ** n; index++) {
     const inputs = variables.map((_, k) => ((index >> (n - 1 - k)) & 1) as Bit);
-    const env: Record<string, boolean> = {};
-    variables.forEach((name, k) => (env[name] = inputs[k] === 1));
-    rows.push({ index, inputs, output: evaluate(ast, env) ? 1 : 0 });
+    rows.push({ index, inputs, output: evaluate(ast, assignment(variables, index)) ? 1 : 0 });
   }
   return { expression: source, variables, rows };
+}
+
+function checkTableSize(n: number): void {
+  if (n > MAX_VARIABLES) {
+    throw new LogicError(`Too many variables (${n}); the limit is ${MAX_VARIABLES}`);
+  }
+}
+
+/** The variable assignment for one truth-table row (first variable = MSB). */
+function assignment(variables: readonly string[], index: number): Record<string, boolean> {
+  const n = variables.length;
+  const env: Record<string, boolean> = {};
+  variables.forEach((name, k) => (env[name] = ((index >> (n - 1 - k)) & 1) === 1));
+  return env;
 }
 
 /**
@@ -117,4 +127,21 @@ export function evalLogic(source: string, values: readonly unknown[]): Bit {
   const env: Record<string, boolean> = {};
   variables.forEach((name, k) => (env[name] = toBit(values[k], name) === 1));
   return evaluate(ast, env) ? 1 : 0;
+}
+
+/**
+ * Whether two expressions agree on every input, comparing over all variables
+ * either one uses. Each expression is parsed on its own, so `"AB"` and
+ * `"A & B"` are equivalent.
+ */
+export function equivalent(a: string, b: string): boolean {
+  const left = compile(a);
+  const right = compile(b);
+  const variables = [...new Set([...left.variables, ...right.variables])].sort(compareNames);
+  checkTableSize(variables.length);
+  for (let index = 0; index < 2 ** variables.length; index++) {
+    const env = assignment(variables, index);
+    if (evaluate(left.ast, env) !== evaluate(right.ast, env)) return false;
+  }
+  return true;
 }

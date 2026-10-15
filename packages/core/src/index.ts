@@ -21,6 +21,7 @@ export {
   type TruthTableRow,
   MAX_VARIABLES,
   compile,
+  equivalent,
   evalLogic,
   maxterms,
   minterms,
@@ -28,3 +29,13 @@ export {
   truthTable,
   truthTableGrid,
 } from './truthTable';
+export { type Implicant, compareImplicants, covers, literalCount } from './implicant';
+export { formatSop } from './format';
+export {
+  MAX_MINIMIZE_VARIABLES,
+  minimize,
+  minimizeM,
+  minimizeMinterms,
+  petrick,
+  primeImplicants,
+} from './minimize';
