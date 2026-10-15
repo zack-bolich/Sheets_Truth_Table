@@ -39,3 +39,4 @@ export {
   petrick,
   primeImplicants,
 } from './minimize';
+export { type KMapCell, kmap, kmapGrid, kmapM } from './kmap';
