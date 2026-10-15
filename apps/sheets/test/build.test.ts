@@ -55,6 +55,7 @@ describe('build output', () => {
       'EQUIVALENT',
       'KMAP',
       'KMAP_M',
+      'SCHEMDRAW',
     ]) {
       expect(js).toMatch(new RegExp(`\\* @customfunction\\n \\*/\\nfunction ${name}\\(`));
     }
@@ -78,6 +79,7 @@ describe('build output', () => {
     expect(call('MINIMIZE', 'A & B | !C')).toBe("AB + C'");
     expect(call('MINIMIZE_M', 4, [[1, 3, 7, 11, 15]], [[0, 2, 5]])).toBe("A'B' + CD");
     expect(call('EQUIVALENT', 'A ^ B', '(A|B)&!(A&B)')).toBe(true);
+    expect(call('SCHEMDRAW', "E'S'W", 'GW')).toBe('GW = not E and not S and W');
     expect(call('KMAP', 'A ^ B')).toEqual([
       ['A\\B', '0', '1'],
       ['0', 0, 1],

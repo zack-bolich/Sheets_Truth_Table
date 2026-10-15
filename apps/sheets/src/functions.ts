@@ -142,3 +142,17 @@ function KMAP_M(
 ): unknown[][] {
   return SheetsLogic.kmapM(numVars, minterms, dontCares, varNames);
 }
+
+/**
+ * Converts a Boolean expression to Schemdraw's logic syntax, for drawing it as
+ * a gate diagram with tools/schemdraw/draw.py (or Schemdraw's logicparse),
+ * e.g. "E'S'W" → "not E and not S and W".
+ *
+ * @param {string} expression The expression, e.g. "E'S'W".
+ * @param {string} [label] Optional output name, e.g. "GW". Returns "GW = …", which draw.py uses as the diagram's label and file name.
+ * @return {string} The expression in Schemdraw syntax.
+ * @customfunction
+ */
+function SCHEMDRAW(expression: unknown, label?: unknown): string {
+  return SheetsLogic.schemdraw(expression, label);
+}

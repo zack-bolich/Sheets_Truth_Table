@@ -9,6 +9,7 @@ import {
   minimize,
   minimizeM,
   minterms,
+  schemdraw,
   truthTable,
 } from '../src/adapter';
 
@@ -140,5 +141,20 @@ describe('kmap / kmapM', () => {
       ['1', 1, 0, 1, 1],
     ]);
     expect(kmapM(3, [[1], [3]], '5', 'E,S,W')[2]).toEqual(['1', 0, 'X', 0, 0]);
+  });
+});
+
+describe('schemdraw', () => {
+  it('converts an expression, optionally labelled', () => {
+    expect(schemdraw("E'S'W")).toBe('not E and not S and W');
+    expect(schemdraw("E'S'W", 'GW')).toBe('GW = not E and not S and W');
+    expect(schemdraw("E'S'W", ' GW ')).toBe('GW = not E and not S and W');
+    expect(schemdraw('A', '')).toBe('A');
+  });
+
+  it('rejects labels that are not names', () => {
+    expect(() => schemdraw('A', 'G W')).toThrow('Label must be a name like GW');
+    expect(() => schemdraw('A', 5)).toThrow('Label must be a name like GW');
+    expect(() => schemdraw('A', [['X', 'Y']])).toThrow('Label must be a name like GW');
   });
 });

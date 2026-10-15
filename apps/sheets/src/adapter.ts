@@ -121,3 +121,18 @@ export function kmapM(
     varOrderArg(varNames),
   );
 }
+
+export function schemdraw(expression: unknown, label?: unknown): string {
+  const text = core.toSchemdraw(expressionArg(expression));
+  const name = flatten(label).filter((cell) => cell !== undefined && cell !== null && cell !== '');
+  if (name.length === 0) return text;
+  const [first] = name;
+  if (
+    name.length > 1 ||
+    typeof first !== 'string' ||
+    !/^[A-Za-z_][A-Za-z0-9_]*$/.test(first.trim())
+  ) {
+    throw new core.LogicError('Label must be a name like GW');
+  }
+  return `${first.trim()} = ${text}`;
+}
