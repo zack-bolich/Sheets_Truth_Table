@@ -40,3 +40,4 @@ export {
   primeImplicants,
 } from './minimize';
 export { type KMapCell, kmap, kmapGrid, kmapM } from './kmap';
+export { toSchemdraw } from './export';
