@@ -32,6 +32,35 @@ function varOrderArg(value: unknown): string[] | undefined {
   return names.length === 0 ? undefined : core.parseVarOrder(names.join(','));
 }
 
+function wholeNumberArg(value: unknown, what: string): number {
+  const cells = flatten(value);
+  const [cell] = cells;
+  const n = typeof cell === 'string' && cell.trim() !== '' ? Number(cell) : cell;
+  if (cells.length !== 1 || typeof n !== 'number' || !Number.isInteger(n)) {
+    throw new core.LogicError(`${what} must be a whole number`);
+  }
+  return n;
+}
+
+/** Indices from cells, a range, or text like "1, 3, 5"; empty cells are skipped. */
+function indexListArg(value: unknown): number[] {
+  return flatten(value).flatMap((cell) => {
+    if (cell === undefined || cell === null || cell === '') return [];
+    if (typeof cell === 'number') return [cell];
+    if (typeof cell === 'string') {
+      return cell
+        .split(/[\s,;{}]+/)
+        .filter((part) => part !== '')
+        .map((part) => {
+          const n = Number(part);
+          if (Number.isNaN(n)) throw new core.LogicError(`'${part}' is not a number`);
+          return n;
+        });
+    }
+    throw new core.LogicError('Minterm lists must contain numbers');
+  });
+}
+
 /** A single row, or a blank cell when there is nothing to list. */
 function row(values: number[]): CellValue[][] {
   return [values.length === 0 ? [''] : values];
@@ -51,4 +80,26 @@ export function maxterms(expression: unknown, varOrder?: unknown): CellValue[][]
 
 export function evalLogic(expression: unknown, ...values: unknown[]): number {
   return core.evalLogic(expressionArg(expression), values.flatMap(flatten));
+}
+
+export function minimize(expression: unknown, varOrder?: unknown): string {
+  return core.minimize(expressionArg(expression), varOrderArg(varOrder));
+}
+
+export function minimizeM(
+  numVars: unknown,
+  minterms: unknown,
+  dontCares?: unknown,
+  varNames?: unknown,
+): string {
+  return core.minimizeM(
+    wholeNumberArg(numVars, 'Number of variables'),
+    indexListArg(minterms),
+    indexListArg(dontCares),
+    varOrderArg(varNames),
+  );
+}
+
+export function equivalent(a: unknown, b: unknown): boolean {
+  return core.equivalent(expressionArg(a), expressionArg(b));
 }

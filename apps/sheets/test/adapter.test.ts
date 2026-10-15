@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { evalLogic, flatten, maxterms, minterms, truthTable } from '../src/adapter';
+import {
+  equivalent,
+  evalLogic,
+  flatten,
+  maxterms,
+  minimize,
+  minimizeM,
+  minterms,
+  truthTable,
+} from '../src/adapter';
 
 describe('flatten', () => {
   it('accepts scalars, rows and columns', () => {
@@ -78,5 +87,45 @@ describe('evalLogic', () => {
 
   it('reports empty cells', () => {
     expect(() => evalLogic('A & !B', 1, '')).toThrow('Value for B is empty');
+  });
+});
+
+describe('minimize', () => {
+  it('returns the minimal sum of products', () => {
+    expect(minimize("AB + A'C + BC")).toBe("AB + A'C");
+    expect(minimize('A & !B', [['B', 'A']])).toBe("B'A");
+  });
+});
+
+describe('minimizeM', () => {
+  it('accepts minterms as an array literal, a column, or text', () => {
+    expect(minimizeM(3, [[1, 3, 5, 7]])).toBe('C');
+    expect(minimizeM(3, [[1], [3], [5], [7], ['']])).toBe('C');
+    expect(minimizeM(3, '1, 3, 5, 7')).toBe('C');
+    expect(minimizeM('3', '{1;3;5;7}')).toBe('C');
+  });
+
+  it("treats omitted or empty don't-cares as none", () => {
+    expect(minimizeM(2, [[3]], undefined)).toBe('AB');
+    expect(minimizeM(2, [[3]], '')).toBe('AB');
+  });
+
+  it("uses don't-cares and custom names", () => {
+    expect(minimizeM(4, [[1, 3, 7, 11, 15]], [[0, 2, 5]])).toBe("A'B' + CD");
+    expect(minimizeM(2, [[3]], '', 'X,Y')).toBe('XY');
+  });
+
+  it('rejects bad arguments', () => {
+    expect(() => minimizeM('three', [[1]])).toThrow('Number of variables must be a whole number');
+    expect(() => minimizeM([[2, 3]], [[1]])).toThrow('Number of variables must be a whole number');
+    expect(() => minimizeM(3, 'a,b')).toThrow("'a' is not a number");
+    expect(() => minimizeM(3, [[true]])).toThrow('Minterm lists must contain numbers');
+  });
+});
+
+describe('equivalent', () => {
+  it('returns a boolean', () => {
+    expect(equivalent('A ^ B', '(A|B)&!(A&B)')).toBe(true);
+    expect(equivalent('A', 'B')).toBe(false);
   });
 });

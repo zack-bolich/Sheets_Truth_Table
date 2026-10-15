@@ -45,7 +45,15 @@ describe('build output', () => {
 
   it('keeps the @customfunction JSDoc in functions.js', () => {
     const js = readFileSync(join(outdir, 'functions.js'), 'utf8');
-    for (const name of ['TRUTHTABLE', 'MINTERMS', 'MAXTERMS', 'EVALLOGIC']) {
+    for (const name of [
+      'TRUTHTABLE',
+      'MINTERMS',
+      'MAXTERMS',
+      'EVALLOGIC',
+      'MINIMIZE',
+      'MINIMIZE_M',
+      'EQUIVALENT',
+    ]) {
       expect(js).toMatch(new RegExp(`\\* @customfunction\\n \\*/\\nfunction ${name}\\(`));
     }
   });
@@ -65,6 +73,9 @@ describe('build output', () => {
     expect(call('MINTERMS', 'AB + C')).toEqual([[1, 3, 5, 6, 7]]);
     expect(call('MAXTERMS', 'AB + C')).toEqual([[0, 2, 4]]);
     expect(call('EVALLOGIC', 'A & !B', 1, 0)).toBe(1);
+    expect(call('MINIMIZE', 'A & B | !C')).toBe("AB + C'");
+    expect(call('MINIMIZE_M', 4, [[1, 3, 7, 11, 15]], [[0, 2, 5]])).toBe("A'B' + CD");
+    expect(call('EQUIVALENT', 'A ^ B', '(A|B)&!(A&B)')).toBe(true);
   });
 
   it('surfaces readable errors', () => {
