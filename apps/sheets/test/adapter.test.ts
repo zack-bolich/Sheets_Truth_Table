@@ -3,6 +3,8 @@ import {
   equivalent,
   evalLogic,
   flatten,
+  kmap,
+  kmapM,
   maxterms,
   minimize,
   minimizeM,
@@ -127,5 +129,16 @@ describe('equivalent', () => {
   it('returns a boolean', () => {
     expect(equivalent('A ^ B', '(A|B)&!(A&B)')).toBe(true);
     expect(equivalent('A', 'B')).toBe(false);
+  });
+});
+
+describe('kmap / kmapM', () => {
+  it('spill a labelled K-map', () => {
+    expect(kmap("AB + C'")).toEqual([
+      ['A\\BC', '00', '01', '11', '10'],
+      ['0', 1, 0, 0, 1],
+      ['1', 1, 0, 1, 1],
+    ]);
+    expect(kmapM(3, [[1], [3]], '5', 'E,S,W')[2]).toEqual(['1', 0, 'X', 0, 0]);
   });
 });

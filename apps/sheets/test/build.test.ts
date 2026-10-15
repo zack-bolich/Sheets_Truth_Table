@@ -53,6 +53,8 @@ describe('build output', () => {
       'MINIMIZE',
       'MINIMIZE_M',
       'EQUIVALENT',
+      'KMAP',
+      'KMAP_M',
     ]) {
       expect(js).toMatch(new RegExp(`\\* @customfunction\\n \\*/\\nfunction ${name}\\(`));
     }
@@ -76,6 +78,16 @@ describe('build output', () => {
     expect(call('MINIMIZE', 'A & B | !C')).toBe("AB + C'");
     expect(call('MINIMIZE_M', 4, [[1, 3, 7, 11, 15]], [[0, 2, 5]])).toBe("A'B' + CD");
     expect(call('EQUIVALENT', 'A ^ B', '(A|B)&!(A&B)')).toBe(true);
+    expect(call('KMAP', 'A ^ B')).toEqual([
+      ['A\\B', '0', '1'],
+      ['0', 0, 1],
+      ['1', 1, 0],
+    ]);
+    expect(call('KMAP_M', 2, [[3]], [[0]])).toEqual([
+      ['A\\B', '0', '1'],
+      ['0', 'X', 0],
+      ['1', 0, 1],
+    ]);
   });
 
   it('surfaces readable errors', () => {

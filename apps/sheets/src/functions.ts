@@ -108,3 +108,37 @@ function MINIMIZE_M(
 function EQUIVALENT(expression1: unknown, expression2: unknown): boolean {
   return SheetsLogic.equivalent(expression1, expression2);
 }
+
+/**
+ * Draws the Karnaugh map of a Boolean expression with 2 to 4 variables. Rows
+ * and columns are in Gray-code order (00, 01, 11, 10), so neighbouring cells
+ * differ in one variable.
+ *
+ * @param {string} expression The expression, e.g. "AB + C'".
+ * @param {string} [varOrder] Optional variable order, e.g. "C,A,B". The first variables label the rows.
+ * @return {Array<Array<string|number>>} The K-map with row and column labels.
+ * @customfunction
+ */
+function KMAP(expression: unknown, varOrder?: unknown): unknown[][] {
+  return SheetsLogic.kmap(expression, varOrder);
+}
+
+/**
+ * Draws the Karnaugh map of a function given by its minterms, with optional
+ * don't-cares shown as X.
+ *
+ * @param {number} numVars Number of variables, 2 to 4.
+ * @param {number[]} minterms Row numbers where the output is 1: a range, an array like {1,3,5}, or text like "1,3,5".
+ * @param {number[]} [dontCares] Optional row numbers whose output doesn't matter.
+ * @param {string} [varNames] Optional variable names, e.g. "X,Y,Z". Defaults to A, B, C, … with A as the most significant bit.
+ * @return {Array<Array<string|number>>} The K-map with row and column labels.
+ * @customfunction
+ */
+function KMAP_M(
+  numVars: unknown,
+  minterms: unknown,
+  dontCares?: unknown,
+  varNames?: unknown,
+): unknown[][] {
+  return SheetsLogic.kmapM(numVars, minterms, dontCares, varNames);
+}

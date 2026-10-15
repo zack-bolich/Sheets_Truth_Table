@@ -103,3 +103,21 @@ export function minimizeM(
 export function equivalent(a: unknown, b: unknown): boolean {
   return core.equivalent(expressionArg(a), expressionArg(b));
 }
+
+export function kmap(expression: unknown, varOrder?: unknown): CellValue[][] {
+  return core.kmap(expressionArg(expression), varOrderArg(varOrder));
+}
+
+export function kmapM(
+  numVars: unknown,
+  minterms: unknown,
+  dontCares?: unknown,
+  varNames?: unknown,
+): CellValue[][] {
+  return core.kmapM(
+    wholeNumberArg(numVars, 'Number of variables'),
+    indexListArg(minterms),
+    indexListArg(dontCares),
+    varOrderArg(varNames),
+  );
+}
