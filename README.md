@@ -34,10 +34,19 @@
 | `MINIMIZE(expression, [order])`                 | Minimal sum of products                                         | `=MINIMIZE("AB + A'C + BC")` → `AB + A'C`              |
 | `MINIMIZE_M(n, minterms, [dontCares], [names])` | Minimal sum of products from a minterm list                     | `=MINIMIZE_M(4, {1,3,7,11,15}, {0,2,5})` → `A'B' + CD` |
 | `EQUIVALENT(expression1, expression2)`          | `TRUE` if both give the same output for every input             | `=EQUIVALENT("A ^ B", "(A\|B)&!(A&B)")` → `TRUE`       |
+| `KMAP(expression, [order])`                     | Karnaugh map for 2–4 variables, rows/columns in Gray-code order | `=KMAP("AB + C'")`                                     |
+| `KMAP_M(n, minterms, [dontCares], [names])`     | Karnaugh map from a minterm list, don't-cares shown as `X`      | `=KMAP_M(4, {1,3,7,11,15}, {0,2,5})`                   |
 
 - **Variable order.** Variables are sorted alphabetically (case-insensitive, with `X2` before `X10`), and the first one is the most significant bit. Pass an order to change that: `=TRUTHTABLE("C & A", "C,A")`. The order can be a comma- or space-separated string or a range of cells. It can also add variables the expression doesn't use, which then show up as extra input columns.
 - **Outputs** are the numbers `1` and `0` (`EQUIVALENT` returns `TRUE`/`FALSE`). `MINTERMS`/`MAXTERMS` return a blank cell when the list is empty.
 - **Minimizing.** `MINIMIZE` and `MINIMIZE_M` return the sum of products with the fewest terms, then the fewest literals, in textbook notation (`AB + C'`). This is the same answer a correctly circled Karnaugh map gives. Multi-letter names are joined with `·` (`En·Clk + X1`). `MINIMIZE_M` names its variables `A`, `B`, `C`, … (A = most significant bit) unless you pass names like `"X,Y,Z"`. Minterm and don't-care lists can be a range, an array like `{1,3,5}`, or text like `"1,3,5"`.
+- **K-maps.** The first variables label the rows (1 for 2–3 variables, 2 for 4) and the rest the columns, both in Gray-code order (`00 01 11 10`) so adjacent cells, including wrap-around, differ in one variable. The cell at row `01`, column `10` of a 4-variable map is minterm `0110` = 6. `=KMAP("AB + C'")` gives:
+
+  | A\BC | 00  | 01  | 11  | 10  |
+  | ---- | --- | --- | --- | --- |
+  | 0    | 1   | 0   | 0   | 1   |
+  | 1    | 1   | 0   | 1   | 1   |
+
 - **Limits.** Truth tables, minterms, maxterms and `EQUIVALENT` allow up to 12 variables (4096 rows). Minimization allows up to 10.
 - **Errors.** Bad input shows `#ERROR!`. Hover over it to see the reason, e.g. `Missing ')' to close '(' at position 5`.
 
