@@ -25,19 +25,21 @@
 
 ## Functions
 
-| Function                           | Returns                                                         | Example                             |
-| ---------------------------------- | --------------------------------------------------------------- | ----------------------------------- |
-| `TRUTHTABLE(expression, [order])`  | Header row, then one row of inputs + output per combination     | `=TRUTHTABLE("A ^ B")`              |
-| `MINTERMS(expression, [order])`    | Row numbers where the output is 1, as a single row              | `=MINTERMS("AB + C")` → `1 3 5 6 7` |
-| `MAXTERMS(expression, [order])`    | Row numbers where the output is 0, as a single row              | `=MAXTERMS("AB + C")` → `0 2 4`     |
-| `EVALLOGIC(expression, values...)` | `1` or `0` for the given inputs, assigned in alphabetical order | `=EVALLOGIC("A & !B", A2, B2)`      |
+| Function                                        | Returns                                                         | Example                                                |
+| ----------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
+| `TRUTHTABLE(expression, [order])`               | Header row, then one row of inputs + output per combination     | `=TRUTHTABLE("A ^ B")`                                 |
+| `MINTERMS(expression, [order])`                 | Row numbers where the output is 1, as a single row              | `=MINTERMS("AB + C")` → `1 3 5 6 7`                    |
+| `MAXTERMS(expression, [order])`                 | Row numbers where the output is 0, as a single row              | `=MAXTERMS("AB + C")` → `0 2 4`                        |
+| `EVALLOGIC(expression, values...)`              | `1` or `0` for the given inputs, assigned in alphabetical order | `=EVALLOGIC("A & !B", A2, B2)`                         |
+| `MINIMIZE(expression, [order])`                 | Minimal sum of products                                         | `=MINIMIZE("AB + A'C + BC")` → `AB + A'C`              |
+| `MINIMIZE_M(n, minterms, [dontCares], [names])` | Minimal sum of products from a minterm list                     | `=MINIMIZE_M(4, {1,3,7,11,15}, {0,2,5})` → `A'B' + CD` |
+| `EQUIVALENT(expression1, expression2)`          | `TRUE` if both give the same output for every input             | `=EQUIVALENT("A ^ B", "(A\|B)&!(A&B)")` → `TRUE`       |
 
 - **Variable order.** Variables are sorted alphabetically (case-insensitive, with `X2` before `X10`), and the first one is the most significant bit. Pass an order to change that: `=TRUTHTABLE("C & A", "C,A")`. The order can be a comma- or space-separated string or a range of cells. It can also add variables the expression doesn't use, which then show up as extra input columns.
-- **Outputs** are the numbers `1` and `0`. `MINTERMS`/`MAXTERMS` return a blank cell when the list is empty.
-- **Limits.** Truth tables, minterms and maxterms allow up to 12 variables (4096 rows).
+- **Outputs** are the numbers `1` and `0` (`EQUIVALENT` returns `TRUE`/`FALSE`). `MINTERMS`/`MAXTERMS` return a blank cell when the list is empty.
+- **Minimizing.** `MINIMIZE` and `MINIMIZE_M` return the sum of products with the fewest terms, then the fewest literals, in textbook notation (`AB + C'`). This is the same answer a correctly circled Karnaugh map gives. Multi-letter names are joined with `·` (`En·Clk + X1`). `MINIMIZE_M` names its variables `A`, `B`, `C`, … (A = most significant bit) unless you pass names like `"X,Y,Z"`. Minterm and don't-care lists can be a range, an array like `{1,3,5}`, or text like `"1,3,5"`.
+- **Limits.** Truth tables, minterms, maxterms and `EQUIVALENT` allow up to 12 variables (4096 rows). Minimization allows up to 10.
 - **Errors.** Bad input shows `#ERROR!`. Hover over it to see the reason, e.g. `Missing ')' to close '(' at position 5`.
-
-_Coming in M2: `MINIMIZE`, `MINIMIZE_M`, `EQUIVALENT`._
 
 ## Expression syntax
 
@@ -92,7 +94,12 @@ If you use multi-letter names without an explicit AND, pass the variable order (
 1. **Lexer** ([`lexer.ts`](packages/core/src/lexer.ts)) turns the string into tokens and applies the juxtaposition rule above.
 2. **Parser** ([`parser.ts`](packages/core/src/parser.ts)) is a hand-written recursive-descent parser with one function per precedence level. It inserts an implicit AND wherever two operands sit side by side.
 3. **Evaluator** ([`ast.ts`](packages/core/src/ast.ts)) walks the tree for each of the 2ⁿ input rows ([`truthTable.ts`](packages/core/src/truthTable.ts)).
-4. _(M2)_ **Quine–McCluskey + Petrick's method** for minimization.
+4. **Minimizer** ([`minimize.ts`](packages/core/src/minimize.ts)) takes the minterms (plus any don't-cares):
+   - **Quine–McCluskey** merges minterms that differ in one bit, level by level, until nothing merges. What's left are the _prime implicants_, the biggest possible groups (the K-map circles).
+   - **Cover selection** picks the cheapest set of primes covering every minterm. It takes _essential_ primes (the only ones covering some minterm), drops dominated rows and columns, and repeats.
+   - **Petrick's method** settles whatever cyclic core is left. Each minterm becomes a clause "P1 or P3 or P4", and the cheapest product of those clauses is the answer. It's found by branch and bound rather than multiplying everything out, which blows up on large functions.
+
+   Tests check the result against brute force for all 256 three-variable functions, and that random expressions minimize to something equivalent and never longer.
 
 ## Architecture
 
