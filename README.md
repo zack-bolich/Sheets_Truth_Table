@@ -25,17 +25,18 @@
 
 ## Functions
 
-| Function                                        | Returns                                                         | Example                                                |
-| ----------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
-| `TRUTHTABLE(expression, [order])`               | Header row, then one row of inputs + output per combination     | `=TRUTHTABLE("A ^ B")`                                 |
-| `MINTERMS(expression, [order])`                 | Row numbers where the output is 1, as a single row              | `=MINTERMS("AB + C")` → `1 3 5 6 7`                    |
-| `MAXTERMS(expression, [order])`                 | Row numbers where the output is 0, as a single row              | `=MAXTERMS("AB + C")` → `0 2 4`                        |
-| `EVALLOGIC(expression, values...)`              | `1` or `0` for the given inputs, assigned in alphabetical order | `=EVALLOGIC("A & !B", A2, B2)`                         |
-| `MINIMIZE(expression, [order])`                 | Minimal sum of products                                         | `=MINIMIZE("AB + A'C + BC")` → `AB + A'C`              |
-| `MINIMIZE_M(n, minterms, [dontCares], [names])` | Minimal sum of products from a minterm list                     | `=MINIMIZE_M(4, {1,3,7,11,15}, {0,2,5})` → `A'B' + CD` |
-| `EQUIVALENT(expression1, expression2)`          | `TRUE` if both give the same output for every input             | `=EQUIVALENT("A ^ B", "(A\|B)&!(A&B)")` → `TRUE`       |
-| `KMAP(expression, [order])`                     | Karnaugh map for 2–4 variables, rows/columns in Gray-code order | `=KMAP("AB + C'")`                                     |
-| `KMAP_M(n, minterms, [dontCares], [names])`     | Karnaugh map from a minterm list, don't-cares shown as `X`      | `=KMAP_M(4, {1,3,7,11,15}, {0,2,5})`                   |
+| Function                                        | Returns                                                         | Example                                                    |
+| ----------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------- |
+| `TRUTHTABLE(expression, [order])`               | Header row, then one row of inputs + output per combination     | `=TRUTHTABLE("A ^ B")`                                     |
+| `MINTERMS(expression, [order])`                 | Row numbers where the output is 1, as a single row              | `=MINTERMS("AB + C")` → `1 3 5 6 7`                        |
+| `MAXTERMS(expression, [order])`                 | Row numbers where the output is 0, as a single row              | `=MAXTERMS("AB + C")` → `0 2 4`                            |
+| `EVALLOGIC(expression, values...)`              | `1` or `0` for the given inputs, assigned in alphabetical order | `=EVALLOGIC("A & !B", A2, B2)`                             |
+| `MINIMIZE(expression, [order])`                 | Minimal sum of products                                         | `=MINIMIZE("AB + A'C + BC")` → `AB + A'C`                  |
+| `MINIMIZE_M(n, minterms, [dontCares], [names])` | Minimal sum of products from a minterm list                     | `=MINIMIZE_M(4, {1,3,7,11,15}, {0,2,5})` → `A'B' + CD`     |
+| `EQUIVALENT(expression1, expression2)`          | `TRUE` if both give the same output for every input             | `=EQUIVALENT("A ^ B", "(A\|B)&!(A&B)")` → `TRUE`           |
+| `KMAP(expression, [order])`                     | Karnaugh map for 2–4 variables, rows/columns in Gray-code order | `=KMAP("AB + C'")`                                         |
+| `KMAP_M(n, minterms, [dontCares], [names])`     | Karnaugh map from a minterm list, don't-cares shown as `X`      | `=KMAP_M(4, {1,3,7,11,15}, {0,2,5})`                       |
+| `SCHEMDRAW(expression, [label])`                | The expression in Schemdraw's logic syntax, for gate diagrams   | `=SCHEMDRAW("E'S'W", "GW")` → `GW = not E and not S and W` |
 
 - **Variable order.** Variables are sorted alphabetically (case-insensitive, with `X2` before `X10`), and the first one is the most significant bit. Pass an order to change that: `=TRUTHTABLE("C & A", "C,A")`. The order can be a comma- or space-separated string or a range of cells. It can also add variables the expression doesn't use, which then show up as extra input columns.
 - **Outputs** are the numbers `1` and `0` (`EQUIVALENT` returns `TRUE`/`FALSE`). `MINTERMS`/`MAXTERMS` return a blank cell when the list is empty.
@@ -49,6 +50,21 @@
 
 - **Limits.** Truth tables, minterms, maxterms and `EQUIVALENT` allow up to 12 variables (4096 rows). Minimization allows up to 10.
 - **Errors.** Bad input shows `#ERROR!`. Hover over it to see the reason, e.g. `Missing ')' to close '(' at position 5`.
+
+## Gate diagrams for lab reports
+
+`SCHEMDRAW` turns an expression into the syntax of [Schemdraw](https://schemdraw.readthedocs.io/)'s logic parser, and [`tools/schemdraw/draw.py`](tools/schemdraw/draw.py) draws it as a gate diagram (SVG or PNG):
+
+1. In the sheet: `=SCHEMDRAW(MINIMIZE_M(3, {1}, , "E,S,W"), "GW")` → `GW = not E and not S and W`.
+2. Copy one or more of those cells into a text file, e.g. `lights.txt`, one per line.
+3. Draw them (needs Python 3.9+ once: `pip install -r tools/schemdraw/requirements.txt`):
+
+   ```sh
+   python tools/schemdraw/draw.py -f lights.txt -o diagrams              # diagrams/GW.svg, …
+   python tools/schemdraw/draw.py "GW = not E and not S and W" --format png  # PNG also needs matplotlib
+   ```
+
+A chain like `A & B & C` becomes one 3-input gate, and `not (A and B)` becomes a NAND. Schemdraw ranks XOR below OR (the opposite of the grammar here), so the export parenthesises every mixed-operator operand. A CI job checks 500 random expressions against Schemdraw's own parser.
 
 ## Expression syntax
 
